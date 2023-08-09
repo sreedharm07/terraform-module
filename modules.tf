@@ -1,0 +1,35 @@
+resource "aws_instance" "web" {
+  ami                       = data.aws_ami.ami.id
+  instance_type             = var.instance_type
+  vpc_security_group_ids    = [var.security_id ]
+
+  tags = {
+    Name  = var.name
+  }
+}
+
+
+
+resource "aws_route53_record" "dns" {
+  zone_id = var.record
+  name    = "${var.name}-dev.cloudev7.online"
+  type    = "A"
+  ttl     = 30
+  records = [aws_instance.web.private_ip]
+}
+
+resource "null_resource" "ansible" {
+  depends_on = [
+    aws_route53_record.dns
+  ]
+
+  provisioner "local-exec"  {
+    command = <<EOF
+    cd /home/centos/roboshop-ansible
+    git pull
+    sleep 30
+    ansible-playbook -i ${var.name}-dev.cloudev7.online, main.yml -e ansible_user=centos -e ansible_password=DevOps321 -e component=${var.name}
+
+EOF
+  }
+}
