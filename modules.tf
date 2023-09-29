@@ -1,7 +1,7 @@
 resource "aws_instance" "web" {
   ami                       = data.aws_ami.ami.id
   instance_type             = var.instance_type
-  vpc_security_group_ids    = [var.security_id ]
+  vpc_security_group_ids    = [var.security_id]
 
   tags = {
     Name  = var.name
@@ -19,11 +19,9 @@ resource "aws_route53_record" "dns" {
 }
 
 resource "null_resource" "ansible" {
-  depends_on = [
-    aws_route53_record.dns
-  ]
+  depends_on = [ aws_route53_record.dns ]
 
-  provisioner "local-exec"  {
+  provisioner "local-exec" {
     command = <<EOF
     cd /home/centos/roboshop-ansible
     git pull
